@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 import numpy as np
@@ -79,13 +78,47 @@ def print_exploration_report(
     split: int,
     series_name: str = "normalized_close",
 ) -> None:
-    """Pretty-print summaries (works in Colab or terminal)."""
-    blob = {
-        "series": series_summary(series, name=series_name),
-        "first_differences": first_difference_summary(series),
-        "supervised_split": supervised_split_summary(X, y, split),
-    }
-    print(json.dumps(blob, indent=2, default=str))
+    """Print a short, readable data summary (terminal-friendly)."""
+    s = series_summary(series, name=series_name)
+    fd = first_difference_summary(series)
+    sp = supervised_split_summary(X, y, split)
+
+    print("  What this block means: we peek at the price series before training any model.")
+    print(f"  Series name: {s['name']}")
+    print(f"  Number of points: {s['length']}  (NaN: {s['n_nan']}, Inf: {s['n_inf']})")
+    if s["min"] is not None:
+        print(
+            f"  Range (normalized): min {s['min']:.6f}  max {s['max']:.6f}  "
+            f"mean {s['mean']:.6f}  std {s['std']:.6f}"
+        )
+    if s["first_5"]:
+        f5 = [round(float(x), 4) for x in s["first_5"]]
+        print(f"  First 5 values (rounded): {f5}")
+    if s["last_5"]:
+        l5 = [round(float(x), 4) for x in s["last_5"]]
+        print(f"  Last 5 values (rounded):  {l5}")
+
+    if fd["n_steps"]:
+        print("  Day-to-day changes (each step minus the previous):")
+        print(
+            f"    mean change: {fd['mean_delta']:.6f}  std: {fd['std_delta']:.6f}  "
+            f"min: {fd['min_delta']:.6f}  max: {fd['max_delta']:.6f}"
+        )
+
+    print("  Sliding windows for supervised learning (past WINDOW days -> predict next day):")
+    print(f"    window length: {sp['window_size']}  total rows: {sp['n_supervised_rows']}")
+    print(
+        f"    train rows: {sp['n_train_rows']}  test rows: {sp['n_test_rows']}  "
+        f"(split index: {sp['split_index']})"
+    )
+    if sp["n_train_rows"]:
+        print(
+            f"    target range in train: [{sp['y_train_target_min']:.6f}, {sp['y_train_target_max']:.6f}]"
+        )
+    if sp["n_test_rows"]:
+        print(
+            f"    target range in test:  [{sp['y_test_target_min']:.6f}, {sp['y_test_target_max']:.6f}]"
+        )
 
 
 def plot_series_optional(

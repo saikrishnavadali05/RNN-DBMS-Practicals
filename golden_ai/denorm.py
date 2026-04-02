@@ -68,9 +68,11 @@ def print_predictions_inr(
     vals = [float(x) for x in np.asarray(normalized_values, dtype=np.float64).ravel()]
     inr = normalized_to_price_10g_inr(np.array(vals, dtype=np.float64), norm_lo, norm_hi, price_lo, price_hi)
     inr_list = [round(float(x), decimals) for x in np.asarray(inr).ravel()]
-    print(title)
-    print(f"  normalized: {vals}")
-    print(f"  INR per 10g 24k: {inr_list}")
+    vals_rounded = [round(v, 4) for v in vals]
+    print(f"  {title}")
+    print("    (Model outputs are in normalized space (here roughly -1 to 1), then converted to rupees per 10g.)")
+    print(f"    Normalized predictions (rounded): {vals_rounded}")
+    print(f"    INR per 10g (24k gold): {inr_list}")
 
 
 def print_actual_vs_predicted_sample_inr(
@@ -93,8 +95,10 @@ def print_actual_vs_predicted_sample_inr(
     sl = slice(-k, None)
     t_inr = normalized_to_price_10g_inr(yt[sl], norm_lo, norm_hi, price_lo, price_hi)
     p_inr = normalized_to_price_10g_inr(yp[sl], norm_lo, norm_hi, price_lo, price_hi)
-    print(f"Last {k} test steps - actual vs {model_name} pred (INR per 10g 24k):")
+    print(f"  Last {k} test steps - actual vs {model_name} prediction (INR per 10g, 24k):")
+    print("    (Rows are oldest to newest within this window; the last row is the most recent test day.)")
     for i in range(k):
+        step = i + 1
         print(
-            f"  [{i - k}] actual {float(t_inr[i]):.{decimals}f} INR  pred {float(p_inr[i]):.{decimals}f} INR"
+            f"    #{step}/{k}  actual {float(t_inr[i]):.{decimals}f} INR  |  predicted {float(p_inr[i]):.{decimals}f} INR"
         )

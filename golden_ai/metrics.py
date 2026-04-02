@@ -29,3 +29,16 @@ def metrics_vector(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, Any]:
         "mape_pct": mape_pct,
         "r2": r2,
     }
+
+
+def print_metrics_block(title: str, metrics: dict[str, Any], *, indent: str = "  ") -> None:
+    """Print test metrics with short labels (friendly for beginners)."""
+    print(f"{indent}{title}")
+    n = metrics["n_samples"]
+    print(f"{indent}Test rows evaluated: {n}")
+    print(f"{indent}MAE  (mean absolute error):     {metrics['mae']:.6f}")
+    print(f"{indent}RMSE (root mean squared error): {metrics['rmse']:.6f}")
+    print(f"{indent}MAPE (mean abs. % error):       {metrics['mape_pct']:.2f}%")
+    r2 = metrics.get("r2")
+    if r2 is not None:
+        print(f"{indent}R^2  (1.0 = perfect fit):      {r2:.6f}")
